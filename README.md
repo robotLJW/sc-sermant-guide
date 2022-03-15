@@ -91,13 +91,56 @@ https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/register/doc
 
 ### 3.1 安装概述
 
+#### 3.1.1 部署拓扑
 
+![](./img/deploy.png)
+
+* sc 为注册中心，本组件为无状态服务，可根据系统规模部署多个
+* etcd 高可用集群至少需要 3 个节点
+
+按照上述的部署拓扑需要 8 台vm。
+
+#### 3.1.2 安装流程
+
+![](./img/process.png)
 
 ### 3.2 安装前准备
 
+#### 3.2.1 获取软件包
 
+* SC：https://github.com/apache/servicecomb-service-center/releases
+
+* ETCD：https://github.com/etcd-io/etcd/releases
+
+### 3.2.2 信息收集
+
+* 所有安装服务的虚拟机IP地址
+* 所有安装服务的虚拟机安装用户
+* 所有安装服务的虚拟机密码
+
+#### 3.2.3 签发证书
+
+1. 双向认证服务端对客户端 CA 做 CN 校验，对于所有微服务可以只使用一套证书，但需将各个节点的IP信息签发到服务端证书中。
+2. 证书替换需要重启。
+3. 生成工具建议使用openssl。
+
+
+
+> 说明：
+>
+> 自签名CA证书需要妥善保管，同一套环境重新签发证书还需要继续使用。
+>
+> 完成签发证书后，请使用history -c 命令清理相关使用痕迹，避免隐私信息泄露。
+>
+> 证书密码是高敏感信息，请妥善保管。如果密码泄露，需要重新签发、替换证书。
 
 ### 3.3 安装操作
+
+#### 3.3.1 安装 etcd
+
+
+
+#### 3.3.2 安装 ServiceCenter
 
 
 
