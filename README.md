@@ -122,9 +122,7 @@ https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/register/doc
 
 1. 双向认证服务端对客户端 CA 做 CN 校验，对于所有微服务可以只使用一套证书，但需将各个节点的IP信息签发到服务端证书中。
 2. 证书替换需要重启。
-3. 生成工具建议使用openssl。
-
-
+3. 有很多方式可以创建CA证书和私钥，其中比较流行的有两种(openssl、cfssl)。
 
 > 说明：
 >
