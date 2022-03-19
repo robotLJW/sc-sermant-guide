@@ -125,6 +125,8 @@ OS: Centos 7
 
 #### 3.2.2 获取软件包
 
+> etcd 根据要求获取相应版本建议3xx，我这边使用了最新的版本。
+
 * SC：https://github.com/apache/servicecomb-service-center/releases
 * ETCD：https://github.com/etcd-io/etcd/releases
 
@@ -146,7 +148,7 @@ OS: Centos 7
 ```sh
 前提：包已经上传到虚拟机的制定目录，并解压
 
-进入3 台 etcd 所在目录，执行（不过这一块可以由systemd去维护）
+进入3 台 etcd 所在目录，执行（这一块可以由systemd去维护）,需要创建下数据以及日志存放的位置。
 
 ./etcd --name=etcd-01 \
 --data-dir=/var/lib/etcd/default.etcd \
@@ -198,14 +200,123 @@ OS: Centos 7
 
 ---
 
+**region-2**
 
+```sh
+./etcd --name=etcd-01 \
+--data-dir=/var/lib/etcd/default.etcd \
+--log-outputs=/var/lib/etcd/log \
+--listen-client-urls=http://192.168.81.131:2379,http://127.0.0.1:2379 \
+--advertise-client-urls=http://192.168.81.131:2379 \
+--listen-peer-urls=http://192.168.81.131:2380 \
+--initial-advertise-peer-urls=http://192.168.81.131:2380 \
+--initial-cluster-token=etcd-cluster \
+--initial-cluster etcd-01=http://192.168.81.131:2380,etcd-02=http://192.168.81.132:2380,etcd-03=http://192.168.81.133:2380 \
+--initial-cluster-state new 
 
+./etcd --name=etcd-02 \
+--data-dir=/var/lib/etcd/default.etcd \
+--log-outputs=/var/lib/etcd/log \
+--listen-client-urls=http://192.168.81.132:2379,http://127.0.0.1:2379 \
+--advertise-client-urls=http://192.168.81.132:2379 \
+--listen-peer-urls=http://192.168.81.132:2380 \
+--initial-advertise-peer-urls=http://192.168.81.132:2380 \
+--initial-cluster-token=etcd-cluster \
+--initial-cluster etcd-01=http://192.168.81.131:2380,etcd-02=http://192.168.81.132:2380,etcd-03=http://192.168.81.133:2380 \
+--initial-cluster-state new 
 
+./etcd --name=etcd-03 \
+--data-dir=/var/lib/etcd/default.etcd \
+--log-outputs=/var/lib/etcd/log \
+--listen-client-urls=http://192.168.81.133:2379,http://127.0.0.1:2379 \
+--advertise-client-urls=http://192.168.81.133:2379 \
+--listen-peer-urls=http://192.168.81.133:2380 \
+--initial-advertise-peer-urls=http://192.168.81.133:2380 \
+--initial-cluster-token=etcd-cluster \
+--initial-cluster etcd-01=http://192.168.81.131:2380,etcd-02=http://192.168.81.132:2380,etcd-03=http://192.168.81.133:2380 \
+--initial-cluster-state new 
+```
+
+查询：
+
+```sh
+./etcdctl --endpoints=https://192.168.81.131:2379 endpoint  status --cluster -w table
+```
+
+![](./img/etcd-linux-2.png)
 
 #### 3.3.2 安装 ServiceCenter
 
+> 确保这边获取的是SC，2.1.0版本的包。
 
+![](./img/sc-conf.png)
+
+如上图，包解压后包含的一些内容，首先需要配置修改 conf 目录中的文件，启动 `start-service-center.sh` 和 `start-frontend.sh`
+
+---
+
+修改`conf`中的文件
+
+`app.conf`
+
+![](./img/app-conf.png)
+
+修改 frontend_host_ip 和 httpaddr，为本级的 ip 地址。
+
+`app.yaml`
+
+![](./img/server-host.png)
+
+![](./img/app-yaml.png)
+
+修改 
+
+1.server.host
+
+2.REGISTRY_KIND
+
+3.REGISTRY_ETCD_CLUSTER_NAME
+
+4.REGISTRY_ETCD_CLUSTER_MANAGER_ENDPOINTS
+
+5.REGISTRY_ETCD_CLUSTER_ENDPOINTS
+
+`chassis.yaml`
+
+![](./img/chassis.png)
+
+修改 listenAddress 为本机的 ip 地址。
+
+`syncer.yaml`
+
+![](./img/syncer.png)
+
+开启 enableOnStart 开关，以及修改endpoints，region-2中的sc机子ip。
+
+**重复上述操作，去修改其他机子上的 sc 的配置**。
+
+然后在各个机子上运行
+
+`start-service-center.sh` 和 `start-frontend.sh`
+
+打开随意一个节点的前端界面：
+
+http://192.168.81.128:30103/
+
+![](./img/front-1.png)
+
+![](./img/front-2.png)
 
 ### 3.4 安装后验证
 
+curl -k http://192.168.81.128:30100/health
 
+![](./img/health.png)
+
+![](./img/register-service.png)
+
+![](./img/front-3.png)
+
+![](./img/front-4.png)
+
+如上图所示，请求创建一个服务，创建成功后以及同步到另外一个 region 了。
