@@ -106,35 +106,99 @@ https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/register/doc
 
 ### 3.2 安装前准备
 
-#### 3.2.1 获取软件包
+#### 3.2.1 准备环境
+
+我这边是个人机子安装了虚拟机。由于我这边个人机子资源有限，只申请了 6 台虚拟机。
+
+OS: Centos 7
+
+![](./img/vm.png)
+
+| vm-ip          | 域       |
+| -------------- | -------- |
+| 192.168.81.128 | region-1 |
+| 192.168.81.129 | region-1 |
+| 192.168.81.130 | region-1 |
+| 192.168.81.131 | region-2 |
+| 192.168.81.132 | region-2 |
+| 192.168.81.133 | region-2 |
+
+#### 3.2.2 获取软件包
 
 * SC：https://github.com/apache/servicecomb-service-center/releases
-
 * ETCD：https://github.com/etcd-io/etcd/releases
 
-### 3.2.2 信息收集
+![](./img/sc-linux.png)
 
-* 所有安装服务的虚拟机IP地址
-* 所有安装服务的虚拟机安装用户
-* 所有安装服务的虚拟机密码
+![](./img/etcd-linux.png)
 
-#### 3.2.3 签发证书
-
-1. 双向认证服务端对客户端 CA 做 CN 校验，对于所有微服务可以只使用一套证书，但需将各个节点的IP信息签发到服务端证书中。
-2. 证书替换需要重启。
-3. 有很多方式可以创建CA证书和私钥，其中比较流行的有两种(openssl、cfssl)。
-
-> 说明：
->
-> 自签名CA证书需要妥善保管，同一套环境重新签发证书还需要继续使用。
->
-> 完成签发证书后，请使用history -c 命令清理相关使用痕迹，避免隐私信息泄露。
->
-> 证书密码是高敏感信息，请妥善保管。如果密码泄露，需要重新签发、替换证书。
 
 ### 3.3 安装操作
 
 #### 3.3.1 安装 etcd
+
+> https://etcd.io/docs/v3.5/op-guide/clustering/
+>
+> 这边需要**注意**：如果你机子单独有固态盘的话，可以把 etcd 安装在固态上，提高性能。
+
+**region-1**
+
+```sh
+前提：包已经上传到虚拟机的制定目录，并解压
+
+进入3 台 etcd 所在目录，执行（不过这一块可以由systemd去维护）
+
+./etcd --name=etcd-01 \
+--data-dir=/var/lib/etcd/default.etcd \
+--log-outputs=/var/lib/etcd/log \
+--listen-client-urls=http://192.168.81.128:2379,http://127.0.0.1:2379 \
+--advertise-client-urls=http://192.168.81.128:2379 \
+--listen-peer-urls=http://192.168.81.128:2380 \
+--initial-advertise-peer-urls=http://192.168.81.128:2380 \
+--initial-cluster-token=etcd-cluster \
+--initial-cluster etcd-01=http://192.168.81.128:2380,etcd-02=http://192.168.81.129:2380,etcd-03=http://192.168.81.130:2380 \
+--initial-cluster-state new 
+
+
+./etcd --name=etcd-02 \
+--data-dir=/var/lib/etcd/default.etcd \
+--log-outputs=/var/lib/etcd/log \
+--listen-client-urls=http://192.168.81.129:2379,http://127.0.0.1:2379 \
+--advertise-client-urls=http://192.168.81.129:2379 \
+--listen-peer-urls=http://192.168.81.129:2380 \
+--initial-advertise-peer-urls=http://192.168.81.129:2380 \
+--initial-cluster-token=etcd-cluster \
+--initial-cluster etcd-01=http://192.168.81.128:2380,etcd-02=http://192.168.81.129:2380,etcd-03=http://192.168.81.130:2380 \
+--initial-cluster-state new 
+
+./etcd --name=etcd-03 \
+--data-dir=/var/lib/etcd/default.etcd \
+--log-outputs=/var/lib/etcd/log \
+--listen-client-urls=http://192.168.81.130:2379,http://127.0.0.1:2379 \
+--advertise-client-urls=http://192.168.81.130:2379 \
+--listen-peer-urls=http://192.168.81.130:2380 \
+--initial-advertise-peer-urls=http://192.168.81.130:2380 \
+--initial-cluster-token=etcd-cluster \
+--initial-cluster etcd-01=http://192.168.81.128:2380,etcd-02=http://192.168.81.129:2380,etcd-03=http://192.168.81.130:2380 \
+--initial-cluster-state new 
+
+```
+
+可以通过etcd --help查看启动参数说明
+
+**如何检验etcd集群是否安装成功**
+
+```sh
+./etcdctl --endpoints=http://192.168.81.128:2379 endpoint  status --cluster -w table
+```
+
+![](./img/etcd-check.png)
+
+看上图可知，ip为192.168.81.128节点选为 leader。
+
+---
+
+
 
 
 
@@ -145,11 +209,3 @@ https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/register/doc
 ### 3.4 安装后验证
 
 
-
-
-
-### 3.1 sc部署
-
-![](./img/sc-deploy.png)
-
-由于资源有限，etcd 没有安装集群。
