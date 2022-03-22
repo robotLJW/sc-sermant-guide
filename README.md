@@ -83,9 +83,24 @@ go build -o service-center github.com/apache/servicecomb-service-center/cmd/scse
 
 ### 1.1 Sermant的下载
 
-### 1.2 注册中心插件介绍文档
+https://github.com/huaweicloud/Sermant/releases
+
+![](./img/sermant-v0.1.0.png)
+
+### 1.2 编译构建
+
+- 编译机器需具备[git](https://git-scm.com/downloads) ,[jdk 8或11](https://www.oracle.com/java/technologies/downloads/) ,[maven](https://maven.apache.org/download.cgi) 环境
+- 执行`git clone -b develop https://github.com/huaweicloud/Sermant.git` 克隆最新源码
+- 执行`cd Sermant`进入源码目录
+- 执行`mvn clean package -Dmaven.test.skip -Pexample` 编译示例项目
+
+![](./img/mvn-clean-package.png)
+
+### 1.3 注册中心插件介绍文档
 
 https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/register/document.md
+
+详细信息见官方文档:https://github.com/huaweicloud/Sermant
 
 ## 3. 演示
 
