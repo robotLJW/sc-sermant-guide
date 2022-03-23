@@ -335,3 +335,66 @@ curl -k http://192.168.81.128:30100/health
 ![](./img/front-4.png)
 
 如上图所示，请求创建一个服务，创建成功后以及同步到另外一个 region 了。
+
+### 3.5 使用Sermant
+
+这边准备好backend，和zookeeper。
+
+![](./img/sermant-prepare.png)
+
+Sermant可以自己编包，或者去 [release](https://github.com/huaweicloud/Sermant/releases) 边下载。
+
+zk[下载地址](http://archive.apache.org/dist/zookeeper/)。
+
+![](./img/sermant-tar.png)
+
+
+
+#### 3.5.1 文档资料
+
+https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/register/document.md
+
+ https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/register/dubbo-register-migiration.md
+
+#### 3.5.2 对接Nacos
+
+**前提**: 
+
+1.已经部署好了nacos
+
+2.编译好了 [demo 应用](https://github.com/huaweicloud/Sermant/tree/develop/sermant-plugins/sermant-register-center/demo-register/demo-register-dubbo)
+
+> 这边可查看这个文档
+>
+> https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/register/dubbo-register-migiration.md
+
+---
+
+步骤一: 部署 provider
+
+```java
+java -Ddubbo.registry.address=nacos://127.0.0.1:8848 -jar dubbo-provider.jar
+```
+
+![](./img/nacos-provider.png)
+
+![](./img/nacos-provider-front.png)
+
+步骤二：部署consumer
+
+```java
+java -Ddubbo.registry.address=nacos://127.0.0.1:8848 -jar dubbo-consumer.jar
+```
+
+![](./img/nacos-consumer.png)
+
+![](./img/nacos-consumer-front.png)
+
+步骤三：验证
+
+```http
+http://192.168.81.128:28020/test
+```
+
+![](./img/nacos-http.png)
+
