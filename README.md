@@ -398,3 +398,70 @@ http://192.168.81.128:28020/test
 
 ![](./img/nacos-http.png)
 
+#### 3.5.3 对接 sc
+
+修改配置地址
+
+![](./img/config.png)
+
+**步骤一**：部署provider
+
+```java
+java -javaagent:/root/sermant/sermant-agent/agent/sermant-agent.jar=appName=dubbo-provider -jar dubbo-provider.jar
+```
+
+**步骤二**：部署consumer
+
+```java
+java -javaagent:/root/sermant/sermant-agent/agent/sermant-agent.jar=appName=dubbo-provider -jar dubbo-consumer.jar 
+```
+
+**步骤三**：测试
+
+```http
+http://192.168.81.128:28020/test
+```
+
+![](./img/test-sc.png)
+
+![](./img/sc-128.png)
+
+![](./img/sc-133.png)
+
+已经同步到另外一个region了。
+
+#### 3.5.2 双注册
+
+详细见文档：https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/register/dubbo-register-migiration.md
+
+修改`${agent_package_path}/agent/pluginPackage/register-center/config/config.yaml`
+
+![](./img/sermant-config.png)
+
+**步骤一**：注册provider
+
+```java
+java -Ddubbo.registry.address=nacos://192.168.81.128:8848 -javaagent:/root/sermant/sermant-agent/agent/sermant-agent.jar=appName=dubbo-provider -jar dubbo-provider.jar 
+```
+
+**步骤二**：注册consumer
+
+```java
+java -Ddubbo.registry.address=nacos://192.168.81.128:8848 -javaagent:/root/sermant/sermant-agent/agent/sermant-agent.jar=appName=dubbo-consumer -jar dubbo-consumer.jar 
+```
+
+**步骤三**：验证
+
+```http
+http://192.168.81.128:28020/test
+```
+
+![](./img/nacos-front.png)
+
+![](./img/nacos-c-p-front.png)
+
+![](./img/sc-128-front.png)
+
+![](./img/sc-133-front.png)
+
+如上图所示已经同步成功。
