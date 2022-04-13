@@ -400,9 +400,15 @@ http://192.168.81.128:28020/test
 
 #### 3.5.3 对接 sc
 
+> https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/registry/document.md
+
 修改配置地址
 
 ![](./img/config.png)
+
+单注册也需要修改这边的address的sc
+
+![](./img/dubbo-sc.png)
 
 **步骤一**：部署provider
 
@@ -432,7 +438,7 @@ http://192.168.81.128:28020/test
 
 #### 3.5.2 双注册
 
-详细见文档：https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/register/dubbo-register-migiration.md
+详细见文档：https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/registry/dubbo-registry-migiration.md
 
 修改`${agent_package_path}/agent/pluginPackage/register-center/config/config.yaml`
 
