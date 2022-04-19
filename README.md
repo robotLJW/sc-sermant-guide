@@ -338,6 +338,149 @@ curl -k http://192.168.81.128:30100/health
 
 ![](./img/health.png)
 
+
+
+```yaml
+{
+    "instances": [
+        {
+            "instanceId": "b40ce99b3bfe4950879d412718117581",
+            "serviceId": "b87ed41a0690049986ba8983b16a2f6c17a1d61f",
+            "endpoints": [
+                "rest://0.0.0.0:30100/"
+            ],
+            "hostName": "etcd01",
+            "status": "UP",
+            "healthCheck": {
+                "mode": "push",
+                "interval": 30,
+                "times": 3
+            },
+            "timestamp": "1650364125",
+            "dataCenterInfo": {
+                "name": "dz1",
+                "region": "rg1",
+                "availableZone": "az1"
+            },
+            "modTimestamp": "1650364125",
+            "version": "2.1.0"
+        },
+        {
+            "instanceId": "b40ce99b3bfe4950879d412718117582",
+            "serviceId": "b87ed41a0690049986ba8983b16a2f6c17a1d62f",
+            "endpoints": [
+                "rest://0.0.0.0:30100/"
+            ],
+            "hostName": "etcd02",
+            "status": "UP",
+            "healthCheck": {
+                "mode": "push",
+                "interval": 30,
+                "times": 3
+            },
+            "timestamp": "1650364125",
+            "dataCenterInfo": {
+                "name": "dz1",
+                "region": "rg1",
+                "availableZone": "az1"
+            },
+            "modTimestamp": "1650364125",
+            "version": "2.1.0"
+        },
+        {
+            "instanceId": "b40ce99b3bfe4950879d412718117583",
+            "serviceId": "b87ed41a0690049986ba8983b16a2f6c17a1d63f",
+            "endpoints": [
+                "rest://0.0.0.0:30100/"
+            ],
+            "hostName": "etcd03",
+            "status": "UP",
+            "healthCheck": {
+                "mode": "push",
+                "interval": 30,
+                "times": 3
+            },
+            "timestamp": "1650364125",
+            "dataCenterInfo": {
+                "name": "dz1",
+                "region": "rg1",
+                "availableZone": "az1"
+            },
+            "modTimestamp": "1650364125",
+            "version": "2.1.0"
+        },
+        {
+            "instanceId": "b40ce99b3bfe4950879d412718117584",
+            "serviceId": "b87ed41a0690049986ba8983b16a2f6c17a1d64f",
+            "endpoints": [
+                "rest://0.0.0.0:30100/"
+            ],
+            "hostName": "etcd04",
+            "status": "UP",
+            "healthCheck": {
+                "mode": "push",
+                "interval": 30,
+                "times": 3
+            },
+            "timestamp": "1650364125",
+            "dataCenterInfo": {
+                "name": "dz2",
+                "region": "rg2",
+                "availableZone": "az2"
+            },
+            "modTimestamp": "1650364125",
+            "version": "2.1.0"
+        },
+        {
+            "instanceId": "b40ce99b3bfe4950879d412718117585",
+            "serviceId": "b87ed41a0690049986ba8983b16a2f6c17a1d65f",
+            "endpoints": [
+                "rest://0.0.0.0:30100/"
+            ],
+            "hostName": "etcd05",
+            "status": "UP",
+            "healthCheck": {
+                "mode": "push",
+                "interval": 30,
+                "times": 3
+            },
+            "timestamp": "1650364125",
+            "dataCenterInfo": {
+                "name": "dz2",
+                "region": "rg2",
+                "availableZone": "az2"
+            },
+            "modTimestamp": "1650364125",
+            "version": "2.1.0"
+        },
+        {
+            "instanceId": "b40ce99b3bfe4950879d412718117586",
+            "serviceId": "b87ed41a0690049986ba8983b16a2f6c17a1d66f",
+            "endpoints": [
+                "rest://0.0.0.0:30100/"
+            ],
+            "hostName": "etcd06",
+            "status": "UP",
+            "healthCheck": {
+                "mode": "push",
+                "interval": 30,
+                "times": 3
+            },
+            "timestamp": "1650364125",
+            "dataCenterInfo": {
+                "name": "dz2",
+                "region": "rg2",
+                "availableZone": "az2"
+            },
+            "modTimestamp": "1650364125",
+            "version": "2.1.0"
+        }
+    ]
+}
+```
+
+
+
 ![](./img/register-service.png)
 
 ![](./img/front-3.png)
