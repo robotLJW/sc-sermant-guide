@@ -284,6 +284,8 @@ OS: Centos 7
 
 ![](./img/app-yaml.png)
 
+![](./img/instance-az.png)
+
 修改 
 
 1.server.host
@@ -295,6 +297,14 @@ OS: Centos 7
 4.REGISTRY_ETCD_CLUSTER_MANAGER_ENDPOINTS
 
 5.REGISTRY_ETCD_CLUSTER_ENDPOINTS
+
+6.registry.instance.datacenter.name
+
+7.registry.instance.datacenter.region
+
+8.registry.instance.datacenter.availableZone
+
+> 注意 region-1 这几个节点配置一样，region-2这边几个节点配置一样
 
 `chassis.yaml`
 
