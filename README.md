@@ -318,6 +318,10 @@ OS: Centos 7
 
 开启 enableOnStart 开关，以及修改endpoints，region-2中的sc机子ip。
 
+**新增修改白名单**：指定服务同步。这边描述一下如果要同步所有服务则在rules 使用"*"，如果设置为 sync带星，则会同步以sync为前缀的服务。 
+
+![](./img/whitelist.png)
+
 **重复上述操作，去修改其他机子上的 sc 的配置**。
 
 然后在各个机子上运行
@@ -328,17 +332,21 @@ OS: Centos 7
 
 http://192.168.81.128:30103/
 
+> 这边展示的是同步所有的服务！！！
+
 ![](./img/front-1.png)
 
 ![](./img/front-2.png)
 
+
+
 ### 3.4 安装后验证
+
+#### 3.4.1 同步所有的服务
 
 curl -k http://192.168.81.128:30100/health
 
 ![](./img/health.png)
-
-
 
 ```yaml
 {
@@ -489,25 +497,45 @@ curl -k http://192.168.81.128:30100/health
 
 如上图所示，请求创建一个服务，创建成功后以及同步到另外一个 region 了。
 
+#### 3.4.2 同步指定服务
+
+> 这边白名单指定了同步服务的前缀名
+
+```yaml
+whitelist:
+    service:
+      # usage for example "sync*"
+      rules:
+        - "sync*"
+```
+
+![](./img/service-abcd.png)
+
+![](./img/sync_1111.png)
+
+![](./img/white-sync.png)
+
+
+
 ### 3.5 使用Sermant
 
 这边准备好backend，和zookeeper。
 
 ![](./img/sermant-prepare.png)
 
-Sermant可以自己编包，或者去 [release](https://github.com/huaweicloud/Sermant/releases) 边下载。
+Sermant可以自己编包，或者去 [release](https://github.com/huaweicloud/Sermant/releases) 边下载。目前 Sermant 已经发布了 0.3.0 版本
 
 zk[下载地址](http://archive.apache.org/dist/zookeeper/)。
 
 ![](./img/sermant-tar.png)
 
-
+![](./img/sermant-v0.3.0.png)
 
 #### 3.5.1 文档资料
 
-https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/register/document.md
+https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/registry/document.md
 
- https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/register/dubbo-register-migiration.md
+https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/registry/dubbo-registry-migiration.md
 
 #### 3.5.2 对接Nacos
 
@@ -515,11 +543,11 @@ https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/register/doc
 
 1.已经部署好了nacos
 
-2.编译好了 [demo 应用](https://github.com/huaweicloud/Sermant/tree/develop/sermant-plugins/sermant-register-center/demo-register/demo-register-dubbo)
+2.编译好了 [demo 应用](https://github.com/huaweicloud/Sermant/tree/develop/sermant-plugins/sermant-service-registry/demo-registry/demo-registry-dubbo)
 
 > 这边可查看这个文档
 >
-> https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/register/dubbo-register-migiration.md
+> https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/registry/dubbo-registry-migiration.md
 
 ---
 
@@ -561,18 +589,24 @@ http://192.168.81.128:28020/test
 
 单注册也需要修改这边的address的sc
 
-![](./img/dubbo-sc.png)
+![](./img/sc-config.png)
+
+设置demo应用的 application.yaml ，修改服务名为 sync 开头
+
+![](./img/sync-consumer.png)
+
+![](./img/sync-provider.png)
 
 **步骤一**：部署provider
 
 ```java
-java -javaagent:/root/sermant/sermant-agent/agent/sermant-agent.jar=appName=dubbo-provider -jar dubbo-provider.jar
+java -Dservicecomb.service.enableDubboRegister=true -javaagent:/root/sermant/sermant-agent/agent/sermant-agent.jar=appName=dubbo-provider -jar dubbo-provider.jar
 ```
 
 **步骤二**：部署consumer
 
 ```java
-java -javaagent:/root/sermant/sermant-agent/agent/sermant-agent.jar=appName=dubbo-provider -jar dubbo-consumer.jar 
+java -Dservicecomb.service.enableDubboRegister=true -javaagent:/root/sermant/sermant-agent/agent/sermant-agent.jar=appName=dubbo-consumer -jar dubbo-consumer.jar 
 ```
 
 **步骤三**：测试
@@ -583,9 +617,7 @@ http://192.168.81.128:28020/test
 
 ![](./img/test-sc.png)
 
-![](./img/sc-128.png)
-
-![](./img/sc-133.png)
+![](./img/sync-c-p.png)
 
 已经同步到另外一个region了。
 
@@ -593,9 +625,9 @@ http://192.168.81.128:28020/test
 
 详细见文档：https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/registry/dubbo-registry-migiration.md
 
-修改`${agent_package_path}/agent/pluginPackage/register-center/config/config.yaml`
+修改`${agent_package_path}/agent/pluginPackage/service-registry/config/config.yaml`
 
-![](./img/sermant-config.png)
+![](./img/registry-config.png)
 
 **步骤一**：注册provider
 
