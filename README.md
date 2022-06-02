@@ -318,7 +318,7 @@ OS: Centos 7
 
 开启 enableOnStart 开关，以及修改endpoints，region-2中的sc机子ip。
 
-**新增修改白名单**：指定服务同步。这边描述一下如果要同步所有服务则在rules 使用"*"，如果设置为 sync带星，则会同步以sync为前缀的服务。 
+**新增——修改白名单**：指定服务同步。这边描述一下如果要同步所有服务则在rules 使用"*"，如果设置为 sync带星，则会同步以sync为前缀的服务。 
 
 ![](./img/whitelist.png)
 
@@ -332,7 +332,7 @@ OS: Centos 7
 
 http://192.168.81.128:30103/
 
-> 这边展示的是同步所有的服务！！！
+> 这边展示的是同步所有的服务！！！即设置 rules 为 "*"
 
 ![](./img/front-1.png)
 
@@ -343,6 +343,10 @@ http://192.168.81.128:30103/
 ### 3.4 安装后验证
 
 #### 3.4.1 同步所有的服务
+
+> 同步所有的服务即把 rules 设置为"*"
+
+检查是否健康
 
 curl -k http://192.168.81.128:30100/health
 
@@ -500,6 +504,8 @@ curl -k http://192.168.81.128:30100/health
 #### 3.4.2 同步指定服务
 
 > 这边白名单指定了同步服务的前缀名
+>
+> 修改 conf 中的 syncer.yaml 文件
 
 ```yaml
 whitelist:
@@ -519,23 +525,25 @@ whitelist:
 
 ### 3.5 使用Sermant
 
-这边准备好backend，和zookeeper。
+这边准备好zookeeper。
+
+> 注意：之前版本需要backend，现在最新版本 backend 仅供选择，可以有也可以没有
 
 ![](./img/sermant-prepare.png)
 
 Sermant可以自己编包，或者去 [release](https://github.com/huaweicloud/Sermant/releases) 边下载。目前 Sermant 已经发布了 0.3.0 版本
 
-zk[下载地址](http://archive.apache.org/dist/zookeeper/)。
+zk[下载地址](http://archive.apache.org/dist/zookeeper/)。也可以到我这边的guide去下载包，这边的包会更加新一点，是我个人出包，可以理解会比社区快一点。
 
-![](./img/sermant-tar.png)
+![](./img/guide-package.png)
 
-![](./img/sermant-v0.3.0.png)
+
 
 #### 3.5.1 文档资料
 
-https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/registry/document.md
+注册文档：https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/registry/document.md
 
-https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/registry/dubbo-registry-migiration.md
+dubbo注册迁移文档：https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/registry/dubbo-registry-migiration.md
 
 #### 3.5.2 对接Nacos
 
@@ -545,16 +553,21 @@ https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/registry/dub
 
 2.编译好了 [demo 应用](https://github.com/huaweicloud/Sermant/tree/develop/sermant-plugins/sermant-service-registry/demo-registry/demo-registry-dubbo)
 
-> 这边可查看这个文档
+> 这个Dubbo的demo应用本身就对接了nacos
 >
-> https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/registry/dubbo-registry-migiration.md
+> ```yaml
+> registry:
+>   # 模拟存量dubbo应用注册到nacos的情况，新开发的应用建议配置为 sc://127.0.0.1:30100
+>   address: nacos://127.0.0.1:8848
+> ```
 
 ---
 
 步骤一: 部署 provider
 
 ```java
-java -Ddubbo.registry.address=nacos://127.0.0.1:8848 -jar dubbo-provider.jar
+# 若application.yaml中已经配置了dubbo地址则这个参数（Ddubbo.registry.address）可以不用写
+java -Ddubbo.registry.address=nacos://192.168.81.128:8848 -jar dubbo-provider.jar
 ```
 
 ![](./img/nacos-provider.png)
@@ -564,7 +577,7 @@ java -Ddubbo.registry.address=nacos://127.0.0.1:8848 -jar dubbo-provider.jar
 步骤二：部署consumer
 
 ```java
-java -Ddubbo.registry.address=nacos://127.0.0.1:8848 -jar dubbo-consumer.jar
+java -Ddubbo.registry.address=nacos://192.168.81.128:8848 -jar dubbo-consumer.jar
 ```
 
 ![](./img/nacos-consumer.png)
@@ -581,31 +594,37 @@ http://192.168.81.128:28020/test
 
 #### 3.5.3 对接 sc
 
-> https://github.com/huaweicloud/Sermant/blob/develop/docs/user-guide/registry/document.md
+> 原先应用已经对接了 Nacos，现在对接到 SC 上
 
 修改配置地址
 
 ![](./img/config.png)
 
-单注册也需要修改这边的address的sc
-
-![](./img/sc-config.png)
-
-设置demo应用的 application.yaml ，修改服务名为 sync 开头
-
-![](./img/sync-consumer.png)
-
-![](./img/sync-provider.png)
+```yaml
+servicecomb.service:
+	# 修改了
+  address: http://192.168.81.128:30100 #注册中心地址
+  heartbeatInterval: 15 #服务实例心跳发送间隔（单位：秒）
+  openMigration: false #是否开启迁移功能
+  enableSpringRegister: false #是否开启spring插件注册能力
+  # 修改了
+  enableDubboRegister: true #是否开启dubbo插件注册能力
+  sslEnabled: false # 是否开启ssl
+```
 
 **步骤一**：部署provider
 
 ```java
+# 若注册插件的配置已经配置了 enableDubboRegister: true 则启动不需要加-Dservicecomb.service.enableDubboRegister参数
+    
 java -Dservicecomb.service.enableDubboRegister=true -javaagent:/root/sermant/sermant-agent/agent/sermant-agent.jar=appName=dubbo-provider -jar dubbo-provider.jar
 ```
 
 **步骤二**：部署consumer
 
 ```java
+# 若注册插件的配置已经配置了 enableDubboRegister: true 则启动不需要加-Dservicecomb.service.enableDubboRegister参数
+
 java -Dservicecomb.service.enableDubboRegister=true -javaagent:/root/sermant/sermant-agent/agent/sermant-agent.jar=appName=dubbo-consumer -jar dubbo-consumer.jar 
 ```
 
@@ -617,9 +636,65 @@ http://192.168.81.128:28020/test
 
 ![](./img/test-sc.png)
 
-![](./img/sync-c-p.png)
+---
+
+ 将服务名修改成 sync 前缀开头
+
+```yaml
+server:
+  port: 28020
+dubbo:
+  application:
+    name: sync-consumer
+  protocol:
+    port: 28820
+  registry:
+    # 模拟存量dubbo应用注册到nacos的情况，新开发的应用建议配置为 sc://127.0.0.1:30100
+    address: nacos://127.0.0.1:8848    
+---
+server:
+  port: 28021
+dubbo:
+  application:
+    name: sync-provider
+  protocol:
+    port: 28821
+  registry:
+    # 模拟存量dubbo应用注册到nacos的情况，新开发的应用建议配置为 sc://127.0.0.1:30100
+    address: nacos://127.0.0.1:8848
+```
+
+**步骤一**：部署provider
+
+```java
+# 若注册插件的配置已经配置了 enableDubboRegister: true 则启动不需要加-Dservicecomb.service.enableDubboRegister参数
+  
+java -Dservicecomb.service.enableDubboRegister=true -javaagent:/root/sermant/sermant-agent/agent/sermant-agent.jar=appName=dubbo-provider -jar dubbo-provider.jar
+```
+
+**步骤二**：部署consumer
+
+```java
+# 若注册插件的配置已经配置了 enableDubboRegister: true 则启动不需要加-Dservicecomb.service.enableDubboRegister参数
+
+java -Dservicecomb.service.enableDubboRegister=true -javaagent:/root/sermant/sermant-agent/agent/sermant-agent.jar=appName=dubbo-consumer -jar dubbo-consumer.jar 
+```
+
+**步骤三**：测试
+
+```http
+http://192.168.81.128:28020/test
+```
+
+![](./img/test-sc.png)
+
+![](./img/sc-sync-c-p.png)
 
 已经同步到另外一个region了。
+
+nacos 这边没注册上。
+
+![](./img/nacos-c-p.png)
 
 #### 3.5.2 双注册
 
@@ -629,15 +704,32 @@ http://192.168.81.128:28020/test
 
 ![](./img/registry-config.png)
 
+```yaml
+servicecomb.service:
+  # 修改地方
+  address: http://192.168.81.128:30100 #注册中心地址
+  heartbeatInterval: 15 #服务实例心跳发送间隔（单位：秒）
+  # 修改地方
+  openMigration: true #是否开启迁移功能
+  enableSpringRegister: false #是否开启spring插件注册能力
+  # 修改地方
+  enableDubboRegister: true #是否开启dubbo插件注册能力
+  sslEnabled: false # 是否开启ssl
+```
+
 **步骤一**：注册provider
 
 ```java
+# 若注册插件的配置已经配置了 enableDubboRegister: true 则启动不需要加-Dservicecomb.service.enableDubboRegister参数
+
 java -Ddubbo.registry.address=nacos://192.168.81.128:8848 -javaagent:/root/sermant/sermant-agent/agent/sermant-agent.jar=appName=dubbo-provider -jar dubbo-provider.jar 
 ```
 
 **步骤二**：注册consumer
 
 ```java
+# 若注册插件的配置已经配置了 enableDubboRegister: true 则启动不需要加-Dservicecomb.service.enableDubboRegister参数
+
 java -Ddubbo.registry.address=nacos://192.168.81.128:8848 -javaagent:/root/sermant/sermant-agent/agent/sermant-agent.jar=appName=dubbo-consumer -jar dubbo-consumer.jar 
 ```
 
@@ -651,8 +743,19 @@ http://192.168.81.128:28020/test
 
 ![](./img/nacos-c-p-front.png)
 
-![](./img/sc-128-front.png)
+![](./img/sc-sync-c-p.png)
 
-![](./img/sc-133-front.png)
+
 
 如上图所示已经同步成功。
+
+---
+
+## 4. 更新
+
+注册中心 sc ：更新了指定服务同步的功能。——需要配置规则前缀
+
+kill-9：下线时间长问题，由于之前agent创建实例使用的是pull方式（不对）这个方式实例健康检查对应的interval为30s，times为3是定死的，改成push模式。
+
+Sermant：目前社区已经更新到v0.3.0，能力做了增强，不需要backend组件也行（可选）。
+
