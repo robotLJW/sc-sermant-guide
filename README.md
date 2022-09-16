@@ -759,3 +759,24 @@ kill-9：下线时间长问题，由于之前agent创建实例使用的是pull�
 
 Sermant：目前社区已经更新到v0.3.0，能力做了增强，不需要backend组件也行（可选）。
 
+## 5. 遗留问题
+
+1.新增接口需要修改版本号：
+
+目前最新版service-center-client sdk已经去掉了这个校验，agent已使用最新版的sdk，每个实例发布的接口存入实例属性中，所以新增接口/删除接口时不需要更新版本号。
+
+2.修改tag需要修改版本号：
+
+agent已经把tag参数存入实例属性中，，所以修改tag时不需要更新版本号。
+
+验证如下：
+
+注册微服务如下图所示，其中包含2个实例：
+![](./img/sc-service.png)
+
+实例信息如下，可以看出来，端口为48821的实例，存在com.huaweicloud.integration.service.FooService、com.huaweicloud.integration.service.TestService与com.huaweicloud.integration.service.BarService 3个接口，其中com.huaweicloud.integration.service.FooService配置了tag: app1，端口为28821的实例，存在com.huaweicloud.integration.service.FooService与com.huaweicloud.integration.service.BarService 2个接口：
+![](./img/instance-properties.png)
+
+测试结果如下图所示，消费者可以正常访问com.huaweicloud.integration.service.TestService接口，访问com.huaweicloud.integration.service.
+FooService接口时，可以通过tag访问不同的实例：
+![](img/test-result.png)
